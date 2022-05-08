@@ -1,41 +1,48 @@
-const BASE_API = '';
+import axios from "axios";
+
+const BASE_API = "http://localhost:3000";
 
 export default {
-        checkToken: async (token) => {
-                const req = await fetch(`${BASE_API}/auth/refresh`, {
-                        method: 'POST',
-                        headers:{
-                                Accept: 'application/json',
-                                'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({token})
-                });
-                const json = await req.json();
-                return json;
-        },
-        SignIn: async (email, password) => {
-                const req = await fetch(`${BASE_API}/auth/login`, {
-                        method: 'POST',
-                        headers:{
-                                Accept: 'application/json',
-                                'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({email, password})
-                });
-                const json = await req.json();
-                return json;
-        },
-        SignUp: async (name , email, password) => {
-            const req = await fetch(`${BASE_API}/user`, {
-                method: 'POST',
-                headers:{
-                        Accept: 'application/json',
-                        'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({name, email, password})
-        });
-        const json = await req.json();
-        return json;
-        }
+  checkToken: async (token) => {
+    try {
+      const resp = await axios.get(`${BASE_API}/auth/`, {
+        headers: { Authorization: "Bearer " + token },
+      });
 
+      return resp.data;
+    } catch (err) {
+      console.error(err);
+
+      return null;
+    }
+  },
+  SignIn: async (email, password) => {
+    try {
+      const resp = await axios.post(`${BASE_API}/auth/signIn`, {
+        email,
+        password,
+      });
+
+      return resp.data;
+    } catch (err) {
+      console.error(err);
+
+      return null;
+    }
+  },
+  SignUp: async (name, email, password) => {
+    try {
+      const resp = await axios.post(`${BASE_API}/auth/signUp`, {
+        name,
+        email,
+        password,
+      });
+
+      return resp.data;
+    } catch (err) {
+      console.error(err);
+
+      return null;
+    }
+  },
 };

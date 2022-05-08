@@ -1,96 +1,90 @@
-import React, { useState, useContext } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState, useContext } from "react";
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { UserContext }  from '../../contexts/UserContext';
+import { UserContext } from "../../contexts/UserContext";
 
 import {
-        Container,
-        InputArea,
-        CustomButton,
-        CustomButtonText,
-        SignMessageButton,
-        SignMessageButtonText,
-        SignMessageButtonTextBold
-} from './styles';
+  Container,
+  InputArea,
+  CustomButton,
+  CustomButtonText,
+  SignMessageButton,
+  SignMessageButtonText,
+  SignMessageButtonTextBold,
+} from "./styles";
 
-import Api from '../../Api';
+import Api from "../../Api";
 
-import SignInput from '../../components/SignInput';
+import SignInput from "../../components/SignInput";
 
-import GymLogo from '../../assets/gym.svg';
-import EmailIcon from '../../assets/email.svg';
-import LockIcon from '../../assets/lock.svg';
+import GymLogo from "../../assets/gym.svg";
+import EmailIcon from "../../assets/email.svg";
+import LockIcon from "../../assets/lock.svg";
 
 export default () => {
-        const { dispatch: userDispatch } = useContext(UserContext);
-        const navigation = useNavigation();
+  const { dispatch: userDispatch } = useContext(UserContext);
+  const navigation = useNavigation();
 
-        const [emailField, setEmailField] = useState('');
-        const [passwordField, setPasswordField] = useState('');
+  const [emailField, setEmailField] = useState("");
+  const [passwordField, setPasswordField] = useState("");
 
-        const handleSignClick = async () => {
-                if(emailField != '' && passwordField != '') {
+  const handleSignClick = async () => {
+    if (emailField != "" && passwordField != "") {
+      let json = await Api.SignIn(emailField, passwordField);
+      if (json.accessToken) {
+        await AsyncStorage.setItem("token", json.accessToken);
 
-                        let json = await Api.SignIn(emailField, passwordField);
-                        if(json.token) {
-                                await AsyncStorage.setItem('token', json.token);
+        navigation.reset({
+          routes: [{ name: "MainTab" }],
+        });
+      } else {
+        alert("E-mail e/ou senha errados!");
+      }
+    } else {
+      alert("Preencha os campos!");
+    }
+  };
 
-                                userDispatch({
-                                        type: 'setAvatar',
-                                        payload:{
-                                                avatar: json.data.avatar
-                                        }
-                                });
+  const handleMessageButtonClick = () => {
+    navigation.reset({
+      routes: [{ name: "SignUp" }],
+    });
+  };
 
-                                navigation.reset({
-                                        routes:[{name: 'MainTab'}]
-                                });
-                        } else {
-                                alert('E-mail e/ou senha errados!');
-                        }
+  return (
+    <Container>
+      <GymLogo width="100%" height="160" />
 
-                } else {
-                        alert("Preencha os campos!");
-                }
-        }
+      <InputArea>
+        <SignInput
+          IconSvg={EmailIcon}
+          placeholder="Digite seu e-mail"
+          value={emailField}
+          onChangeText={(t) => setEmailField(t)}
+          autoCapitalize="none"
+        />
 
-        const handleMessageButtonClick = () => {
-                navigation.reset({
-                        routes: [{name: 'SignUp'}]
-                });
-        }
+        <SignInput
+          IconSvg={LockIcon}
+          placeholder="Digite sua senha"
+          value={passwordField}
+          onChangeText={(t) => setPasswordField(t)}
+          password={true}
+          autoCapitalize="none"
+        />
 
-        return (
-                <Container>
-                        <GymLogo width="100%" height="160" />
+        <CustomButton onPress={handleSignClick}>
+          <CustomButtonText>LOGIN</CustomButtonText>
+        </CustomButton>
+      </InputArea>
 
-                        <InputArea>
-                                <SignInput 
-                                        IconSvg={EmailIcon}
-                                        placeholder="Digite seu e-mail"
-                                        value={emailField}
-                                        onChangeText={t=>setEmailField(t)}
-                                />
-
-                                <SignInput 
-                                        IconSvg={LockIcon}
-                                        placeholder="Digite sua senha" 
-                                        value={passwordField}
-                                        onChangeText={t=>setPasswordField(t)}
-                                        password={true}
-                                />
-
-                                <CustomButton onPress={handleSignClick}>
-                                        <CustomButtonText>LOGIN</CustomButtonText>
-                                </CustomButton>
-                        </InputArea>
-
-                        <SignMessageButton onPress={handleMessageButtonClick}>
-                                <SignMessageButtonText>Ainda não possui uma conta?</SignMessageButtonText>
-                                <SignMessageButtonTextBold>Cadastre-se</SignMessageButtonTextBold>
-                        </SignMessageButton>
-
-                 </Container>
-        );
-}
+      <SignMessageButton onPress={handleMessageButtonClick}>
+        <SignMessageButtonText>
+          Ainda não possui uma conta?
+        </SignMessageButtonText>
+        <SignMessageButtonTextBold>Cadastre-se</SignMessageButtonTextBold>
+      </SignMessageButton>
+    </Container>
+  );
+};
